@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from flask import current_app as app
 import numpy as np
-from pyDecision.algorithm import ahp_method, topsis_method
+from pyDecision.algorithm import ahp_method, topsis_method, promethee_ii, waspas_method
 
 from app.models import Company, FinancialIndicator
 from helpers.mcda_helpers import list_criteria, fetch_company_data, calculate_pairwise_matrix, \
@@ -123,40 +123,87 @@ def analyze_topsis():
     })
 
 
-@app.route('/api/analyze', methods=['POST'])
-def analyze():
+@app.route('/api/analyze/promethee', methods=['POST'])
+def analyze_promethee():
     data = request.json
     selected_companies = data['companies']  # List of selected company IDs
-    selected_criteria = data['criteria']  # List of selected criteria IDs
-    weights = data['weights']  # List of criteria weights
-    method = data['method']    # Selected MCDA method
 
-    # Fetch data for selected companies and criteria
-    decision_matrix = []
-    for company_id in selected_companies:
-        financial_data = FinancialIndicator.query.filter_by(company_id=company_id).first()
-        row = []
-        for criterion in selected_criteria:
-            row.append(getattr(financial_data, criterion))
-        decision_matrix.append(row)
+    # Parameters for promethee
+    Q = data.get("Q", [0.3] * 8)  # indifference
+    S = data.get("S", [0.4] * 8)  # preference
+    P = data.get("P", [0.5] * 8)  # veto
+    W = data.get("weights", [9.00, 8.24, 5.98, 8.48, 7.00, 6.50, 5.00, 7.80])  # weights
+    F = data.get("functions", ['t5'] * 8)  # preference functions
 
-    if method == 'ahp':
-        decision_matrix = np.array(decision_matrix)  # Ensure it's a numpy array
-        ahp = AHP(decision_matrix)
-        scores = ahp.rank()  # Returns the ranked alternatives
-    elif method == 'topsis':
-        decision_matrix = np.array(decision_matrix)
-        scores = topsis_method(decision_matrix, weights, selected_criteria)
-    elif method == 'promethee':
-        decision_matrix = np.array(decision_matrix)
-        scores = promethee_method(decision_matrix, weights, preference_functions)
-    elif method == 'wsm':
-        decision_matrix = np.array(decision_matrix)
-        scores = wsm_method(decision_matrix, weights)
-    else:
-        return jsonify({'error': 'Invalid method'}), 400
+    criteria = list_criteria()
 
-    return jsonify({'results': scores})
+    # Fetch company data
+    company_data = fetch_company_data(selected_companies)
+
+    # Validate data
+    if len(company_data) < 2:
+        return jsonify({'error': 'At least two companies are required for analysis'}), 400
+
+    # Build the decision matrix
+    try:
+        decision_matrix = np.array([
+            [company[criterion["id"]] for criterion in criteria]
+            for company in company_data
+        ])
+    except KeyError as e:
+        return jsonify({'error': f'Missing data for criterion: {str(e)}'}), 400
+
+    # Vnesemo podatke za PROMETHEE
+    scores = promethee_ii(decision_matrix, W=W, Q=Q, S=S, P=P, F=F, sort=True, topn=10, graph=True, verbose=True)
+
+    # Vrnemo rezultate v JSON obliki
+    return jsonify({scores})
+
+
+@app.route('/api/analyze/waspas', methods=['POST'])
+def analyze_waspas():
+    data = request.json
+    selected_companies = data['companies']  # List of selected company IDs
+    user_weights = data.get('weights')  # Optional: User-provided weights
+    lambda_value = data.get("lambda_value", 0.5)  # Default lambda value
+
+    # Fetch criteria metadata and determine weights/types
+    criteria = list_criteria()
+    criterion_types = [c["type"] for c in criteria]  # 'max' or 'min'
+    default_weights = [1 / len(criteria)] * len(criteria)  # Equal weights
+
+    # Use user-provided weights or fallback to default
+    weights = user_weights if user_weights else default_weights
+
+    # Fetch company data
+    company_data = fetch_company_data(selected_companies)
+
+    # Validate data
+    if len(company_data) < 2:
+        return jsonify({'error': 'At least two companies are required for analysis'}), 400
+
+    # Build the decision matrix
+    try:
+        decision_matrix = np.array([
+            [company[criterion["id"]] for criterion in criteria]
+            for company in company_data
+        ])
+    except KeyError as e:
+        return jsonify({'error': f'Missing data for criterion: {str(e)}'}), 400
+
+    # Validation (Ensure dataset shape, weights, and criterion_type consistency)
+    if len(criterion_types) != decision_matrix.shape[1] or len(user_weights) != decision_matrix.shape[1]:
+        return jsonify({'error': 'The number of criteria must match the dataset dimensions'}), 400
+
+    # Call WASPAS method
+    wsm, wpm, waspas = waspas_method(decision_matrix, criterion_types, weights, lambda_value, graph=True)
+
+    # Return the results in JSON format
+    return jsonify({
+        'WSM_result': wsm.tolist(),  # Weighted Sum Model result
+        'WPM_result': wpm.tolist(),  # Weighted Product Model result
+        'WASPAS_result': waspas.tolist()  # WASPAS combined result
+    })
 
 
 @app.route('/api/companies', methods=['GET'])
