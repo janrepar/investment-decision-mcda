@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from flask import current_app as app
 import numpy as np
-from pyDecision.algorithm import ahp_method
+from pyDecision.algorithm import ahp_method, topsis_method
 
 from app.models import Company, FinancialIndicator
 from helpers.mcda_helpers import list_criteria, fetch_company_data, calculate_pairwise_matrix, \
@@ -78,23 +78,49 @@ def analyze_ahp():
 def analyze_topsis():
     data = request.json
     selected_companies = data['companies']  # List of selected company IDs
-    selected_criteria = data['criteria']  # List of selected criteria IDs
-    weights = data['weights']  # List of criteria weights
-    criteria_types = data['criteria_types']  # List of criteria types (min/max)
+    user_weights = data.get('weights')  # Optional: User-provided weights
 
-    # Fetch data for performance matrix (TOPSIS)
-    decision_matrix = []
-    for company_id in selected_companies:
-        financial_data = FinancialIndicator.query.filter_by(company_id=company_id).first()
-        row = []
-        for criterion in selected_criteria:
-            row.append(getattr(financial_data, criterion))
-        decision_matrix.append(row)
+    # Fetch criteria metadata and determine weights/types
+    criteria = list_criteria()
+    criterion_types = [c["type"] for c in criteria]  # 'max' or 'min'
+    default_weights = [1 / len(criteria)] * len(criteria)  # Equal weights
+
+    # Use user-provided weights or fallback to default
+    weights = user_weights if user_weights else default_weights
+
+    # Fetch company data
+    company_data = fetch_company_data(selected_companies)
+
+    # Validate data
+    if len(company_data) < 2:
+        return jsonify({'error': 'At least two companies are required for analysis'}), 400
+
+    # Build the decision matrix
+    try:
+        decision_matrix = np.array([
+            [company[criterion["id"]] for criterion in criteria]
+            for company in company_data
+        ])
+    except KeyError as e:
+        return jsonify({'error': f'Missing data for criterion: {str(e)}'}), 400
 
     # Perform TOPSIS analysis
-    scores = topsis_method(decision_matrix, weights, criteria_types)
+    try:
+        relative_closeness = topsis_method(decision_matrix, weights, criterion_types)
+    except Exception as e:
+        return jsonify({'error': f'Error performing TOPSIS analysis: {str(e)}'}), 500
 
-    return jsonify({'scores': scores.tolist()})
+    # Prepare results
+    ranked_companies = [
+        {"name": company_data[i]["name"], "score": relative_closeness[i], "rank": rank + 1}
+        for rank, i in enumerate(np.argsort(-relative_closeness))
+    ]
+
+    return jsonify({
+        'weights': weights,
+        'criterion_types': criterion_types,
+        'ranked_companies': ranked_companies
+    })
 
 
 @app.route('/api/analyze', methods=['POST'])
