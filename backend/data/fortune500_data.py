@@ -5,7 +5,16 @@ import json
 
 # Helper function to convert formatted numbers
 def convert_to_number(value):
+    if not value or value == "N/A":
+        return 0.0
     return float(value.replace("$", "").replace(",", ""))
+
+
+# Helper function to convert percentage to floats
+def convert_percentage_to_float(value):
+    if not value or value == "N/A":
+        return 0.0
+    return float(value.replace("%", "").strip()) / 100
 
 
 # Insert data into the database
@@ -32,7 +41,9 @@ def insert_company_data():
             profit_change=company_data['profit_change'],
             revenue_change=company_data['revenue_change'],
             assets=convert_to_number(company_data['assets']),
-            employees=int(company_data['employees'].replace(",", ""))
+            employees=int(company_data['employees'].replace(",", "")),
+            profit_change_percentage=convert_percentage_to_float(company_data['profit_change']),
+            revenue_change_percentage=convert_percentage_to_float(company_data['revenue_change'])
         )
         db.session.add(financial_indicator)
 

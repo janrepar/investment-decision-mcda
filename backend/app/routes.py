@@ -164,8 +164,8 @@ def analyze_promethee():
 def analyze_waspas():
     data = request.json
     selected_companies = data['companies']  # List of selected company IDs
-    user_weights = data.get('weights')  # Optional: User-provided weights
-    lambda_value = data.get("lambda_value", 0.5)  # Default lambda value
+    user_weights = data.get('weights')  # User-provided weights
+    lambda_value = data.get("lambda_value", 0.5)  # Default lambda value (weight given to WSM and WPM method)
 
     # Fetch criteria metadata and determine weights/types
     criteria = list_criteria()
