@@ -1,5 +1,5 @@
 import requests
-from app import db
+from app import db, create_app
 from app.models import Company, FinancialIndicator
 from dotenv import load_dotenv
 import os
@@ -82,4 +82,8 @@ def update_all_companies():
 
 # Run the update function directly
 if __name__ == '__main__':
-    update_all_companies()
+    # Create the Flask app and ensure the context is active
+    app = create_app()
+
+    with app.app_context():
+        update_all_companies()
