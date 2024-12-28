@@ -8,7 +8,10 @@ flask-backend/
 │   ├── models.py
 │   ├── routes.py
 │   ├── mcda.db
-├── migrations/
+├── data/
+│   ├── companies.json
+├── alpha_vantage_data.py
+├── fortune500_data.py
 ├── run.py
 ├── requirements.txt
 ├── config.py
