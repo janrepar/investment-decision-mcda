@@ -151,9 +151,11 @@ def fetch_company_data(selected_company_ids):
                 "profit_change_percentage": financial_data.profit_change_percentage,
                 "revenue_change_percentage": financial_data.revenue_change_percentage,
                 "roe": financial_data.roe,
-                "price_to_sales_ratio": financial_data.price_to_sales_ratio,
+                "price_to_earnings_ratio": financial_data.price_to_earnings_ratio,
                 "stock_volatility": financial_data.stock_volatility,
-                "dividend_yield": financial_data.dividend_yield
+                "dividend_yield": financial_data.dividend_yield,
+                "earnings_per_share": financial_data.earnings_per_share,
+                "EV_to_EBITDA": financial_data.EV_to_EBITDA
             })
     return company_data
 
@@ -165,7 +167,9 @@ def list_criteria():
         {"id": "profit_change_percentage", "name": "Profit Change (%)", "type": "max"},
         {"id": "revenue_change_percentage", "name": "Revenue Change (%)", "type": "max"},
         {"id": "roe", "name": "Return on Equity (ROE)", "type": "max"},
-        {"id": "price_to_sales_ratio", "name": "Debt to Equity Ratio", "type": "max"},
+        {"id": "price_to_earnings_ratio", "name": "Price To Earnings Ratio", "type": "min"},
         {"id": "stock_volatility", "name": "Stock Volatility", "type": "min"},
-        {"id": "dividend_yield", "name": "Dividends", "type": "max"}
+        {"id": "dividend_yield", "name": "Dividend Yield", "type": "max"},
+        {"id": "earnings_per_share", "name": "Earnings Per Share", "type": "max"},
+        {"id": "EV_to_EBITDA", "name": "EV To EBITDA", "type": "min"}
     ]

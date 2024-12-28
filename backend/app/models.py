@@ -29,8 +29,10 @@ class FinancialIndicator(db.Model):
     assets = db.Column(db.Integer)
     employees = db.Column(db.Integer)
     roe = db.Column(db.Float)  # Return on Equity
-    price_to_sales_ratio = db.Column(db.Float)
+    price_to_earnings_ratio = db.Column(db.Float)
     stock_volatility = db.Column(db.Float)
     dividend_yield = db.Column(db.Float)
+    earnings_per_share = db.Column(db.Float)
+    EV_to_EBITDA = db.Column(db.Float)
     profit_change_percentage = db.Column(db.Float)  # Profit change as percentage
     revenue_change_percentage = db.Column(db.Float)  # Revenue change as percentage

@@ -3,7 +3,6 @@ from app import db, create_app
 from app.models import Company, FinancialIndicator
 from dotenv import load_dotenv
 import os
-import time
 
 load_dotenv()
 
@@ -19,7 +18,7 @@ def get_alpha_vantage_data(symbol):
         response.raise_for_status()  # Raise HTTPError for bad HTTP responses
         data = response.json()
 
-        if "Note" in data:  # Handle API limit issues
+        if "Information" in data:  # Handle API limit issues
             print(f"API limit reached for symbol {symbol}. Skipping...")
             return None
 
@@ -41,7 +40,7 @@ def safe_float(value):
 
 
 # Function to update financial indicators in the database
-def update_financial_indicators(company_id, roe, debt_to_equity, dividends, volatility):
+def update_financial_indicators(company_id, roe, price_to_earnings_ratio, dividend_yield, volatility, earnings_per_share, EV_to_EBITDA):
     company = Company.query.get(company_id)
 
     if company:
@@ -53,12 +52,16 @@ def update_financial_indicators(company_id, roe, debt_to_equity, dividends, vola
         # Update only if data is available
         if roe is not None:
             financial_indicator.roe = roe
-        if debt_to_equity is not None:
-            financial_indicator.debt_to_equity_ratio = debt_to_equity
-        if dividends is not None:
-            financial_indicator.dividends = dividends
+        if price_to_earnings_ratio is not None:
+            financial_indicator.price_to_earnings_ratio = price_to_earnings_ratio
+        if dividend_yield is not None:
+            financial_indicator.dividend_yield = dividend_yield
         if volatility is not None:
             financial_indicator.stock_volatility = volatility
+        if earnings_per_share is not None:
+            financial_indicator.earnings_per_share = earnings_per_share
+        if EV_to_EBITDA is not None:
+            financial_indicator.EV_to_EBITDA = EV_to_EBITDA
 
 
 # Connect to the database and get the list of companies
@@ -75,17 +78,16 @@ def update_all_companies():
 
         # Extract relevant fields using safe_float helper
         roe = safe_float(data.get('ReturnOnEquityTTM'))
-        price_to_sales_ratio = safe_float(data.get('PriceToSalesRatioTTM'))
+        price_to_earnings_ratio = safe_float(data.get('PERatio'))
         dividend_yield = safe_float(data.get('DividendYield'))
         volatility = safe_float(data.get('Beta'))
+        earnings_per_share = safe_float(data.get('EPS'))
+        EV_to_EBITDA = safe_float(data.get('EVToEBITDA'))
 
         # Update financial indicators
-        update_financial_indicators(company.id, roe, price_to_sales_ratio, dividend_yield, volatility)
+        update_financial_indicators(company.id, roe, price_to_earnings_ratio, dividend_yield, volatility, earnings_per_share, EV_to_EBITDA)
 
         print(f"Updated data for {company.name} ({symbol}).")
-
-        # Avoid hitting the API rate limit
-        time.sleep(1)
 
     db.session.commit()
     print("Alpha Vantage data successfully updated.")

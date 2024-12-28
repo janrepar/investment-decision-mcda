@@ -236,9 +236,11 @@ def get_company(company_id):
             "assets": indicator.assets,
             "employees": indicator.employees,
             "roe": indicator.roe,
-            "price_to_sales_ratio": indicator.price_to_sales_ratio,
+            "price_to_earnings_ratio": indicator.price_to_earnings_ratio,
             "stock_volatility": indicator.stock_volatility,
-            "dividend_yield": indicator.dividend_yield
+            "dividend_yield": indicator.dividend_yield,
+            "earnings_per_share": indicator.earnings_per_share,
+            "EV_to_EBITDA": indicator.EV_to_EBITDA
         }
         for indicator in company.financial_indicators
     ]
