@@ -169,38 +169,3 @@ def list_criteria():
         {"id": "stock_volatility", "name": "Stock Volatility", "type": "min"},
         {"id": "dividends", "name": "Dividends", "type": "max"}
     ]
-
-
-
-
-def topsis_method(decision_matrix, weights, criteria_types):
-    # Create a decision matrix and weights
-    decision_matrix = np.array(decision_matrix)
-    weights = np.array(weights)
-
-    # Perform TOPSIS analysis
-    topsis = topsis_method(decision_matrix, weights, criteria_types)
-    scores = topsis.rank()  # Returns the ranked alternatives
-    return scores
-
-
-def promethee_method(decision_matrix, weights, preference_functions):
-    # Create decision matrix and weights
-    decision_matrix = np.array(decision_matrix)
-    weights = np.array(weights)
-
-    # Define preference functions, and perform PROMETHEE analysis
-    promethee = promethee_method(decision_matrix, weights, preference_functions)
-    positive_flows, negative_flows, net_flows = promethee.flow()  # Returns preference flows
-    return net_flows
-
-
-def wsm_method(decision_matrix, weights):
-    # Create decision matrix and weights
-    decision_matrix = np.array(decision_matrix)
-    weights = np.array(weights)
-
-    # Perform WSM analysis
-    wsm = wsm_method(decision_matrix, weights)
-    scores = wsm.rank()  # Returns the ranked alternatives
-    return scores

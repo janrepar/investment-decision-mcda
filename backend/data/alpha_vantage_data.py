@@ -58,7 +58,6 @@ def update_all_companies():
             dividends = float(data['DividendYield']) if data['DividendYield'] != 'N/A' else None
         else:
             dividends = None
-
         # Adding stock volatility (Beta)
         if 'Beta' in data:
             volatility = float(data['Beta']) if data['Beta'] != 'N/A' else None
