@@ -151,9 +151,9 @@ def fetch_company_data(selected_company_ids):
                 "profit_change_percentage": financial_data.profit_change_percentage,
                 "revenue_change_percentage": financial_data.revenue_change_percentage,
                 "roe": financial_data.roe,
-                "debt_to_equity_ratio": financial_data.debt_to_equity_ratio,
+                "price_to_sales_ratio": financial_data.price_to_sales_ratio,
                 "stock_volatility": financial_data.stock_volatility,
-                "dividends": financial_data.dividends
+                "dividend_yield": financial_data.dividend_yield
             })
     return company_data
 
@@ -165,7 +165,7 @@ def list_criteria():
         {"id": "profit_change_percentage", "name": "Profit Change (%)", "type": "max"},
         {"id": "revenue_change_percentage", "name": "Revenue Change (%)", "type": "max"},
         {"id": "roe", "name": "Return on Equity (ROE)", "type": "max"},
-        {"id": "debt_to_equity_ratio", "name": "Debt to Equity Ratio", "type": "min"},
+        {"id": "price_to_sales_ratio", "name": "Debt to Equity Ratio", "type": "max"},
         {"id": "stock_volatility", "name": "Stock Volatility", "type": "min"},
-        {"id": "dividends", "name": "Dividends", "type": "max"}
+        {"id": "dividend_yield", "name": "Dividends", "type": "max"}
     ]

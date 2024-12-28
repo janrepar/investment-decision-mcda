@@ -29,6 +29,17 @@ def get_alpha_vantage_data(symbol):
         return None
 
 
+# Helper function to safely convert data to float
+def safe_float(value):
+    try:
+        # Return None if the value is not a valid float or is a known invalid string
+        if value in ['N/A', 'None', None, '']:
+            return None
+        return float(value)
+    except ValueError:
+        return None
+
+
 # Function to update financial indicators in the database
 def update_financial_indicators(company_id, roe, debt_to_equity, dividends, volatility):
     company = Company.query.get(company_id)
@@ -62,14 +73,14 @@ def update_all_companies():
         if not data:
             continue
 
-        # Extract relevant fields
-        roe = float(data['ReturnOnEquityTTM']) if data.get('ReturnOnEquityTTM') and data['ReturnOnEquityTTM'] != 'N/A' else None
-        debt_to_equity = float(data['DebtToEquity']) if data.get('DebtToEquity') and data['DebtToEquity'] != 'N/A' else None
-        dividends = float(data['DividendYield']) if data.get('DividendYield') and data['DividendYield'] != 'N/A' else None
-        volatility = float(data['Beta']) if data.get('Beta') and data['Beta'] != 'N/A' else None
+        # Extract relevant fields using safe_float helper
+        roe = safe_float(data.get('ReturnOnEquityTTM'))
+        price_to_sales_ratio = safe_float(data.get('PriceToSalesRatioTTM'))
+        dividend_yield = safe_float(data.get('DividendYield'))
+        volatility = safe_float(data.get('Beta'))
 
         # Update financial indicators
-        update_financial_indicators(company.id, roe, debt_to_equity, dividends, volatility)
+        update_financial_indicators(company.id, roe, price_to_sales_ratio, dividend_yield, volatility)
 
         print(f"Updated data for {company.name} ({symbol}).")
 
