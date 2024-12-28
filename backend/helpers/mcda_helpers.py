@@ -16,55 +16,39 @@ def calculate_pairwise_matrix(data, criterion_type):
     n = len(data)
     matrix = np.ones((n, n))  # Initialize with 1s for diagonal values
 
-    # Define thresholds for intensity mapping
-    thresholds = {
-        1: 0.05,  # Equal importance for differences below 5%
-        3: 0.2,   # Moderate importance for differences between 5% and 20%
-        5: 0.5,   # Strong importance for differences between 20% and 50%
-        7: 0.8,   # Very strong importance for differences between 50% and 80%
-        9: 1.0    # Extreme importance for differences above 80%
-    }
-
     for i in range(n):
         for j in range(i + 1, n):
             # Calculate the absolute difference or ratio
-            if data[j] == 0 or data[i] == 0:
-                intensity = 1  # Avoid division by zero; treat as equal importance
+            if data[i] == 0 or data[j] == 0:
+                intensity = 1  # Avoid division by zero; treat as equal
             else:
-                # Calculate relative ratio or difference
+                # Calculate ratio or reverse ratio based on criterion type
                 if criterion_type == "max":  # Benefit criterion
-                    ratio = abs(data[i] - data[j]) / max(data[i], data[j])
+                    ratio = abs(abs(data[i]) - abs(data[j])) / max(abs(data[i]), abs(data[j]))
                 elif criterion_type == "min":  # Cost criterion
-                    ratio = abs(data[j] - data[i]) / max(data[i], data[j])  # Reverse logic for cost
-
-                # Assign intensity based on thresholds
-                if ratio <= thresholds[1]:
-                    intensity = 1
-                elif ratio <= thresholds[3]:
-                    intensity = 3
-                elif ratio <= thresholds[5]:
-                    intensity = 5
-                elif ratio <= thresholds[7]:
-                    intensity = 7
+                    ratio = abs(abs(data[j]) - abs(data[i])) / max(abs(data[i]), abs(data[j]))  # Reverse logic for cost
                 else:
-                    intensity = 9
+                    raise ValueError("Invalid criterion_type. Use 'max' or 'min'.")
+
+                # Determine intensity based on the ratio
+                intensity = map_to_intensity_smooth(ratio)
 
             # Populate the pairwise comparison matrix
             if criterion_type == "max":  # Benefit criterion
-                if data[i] > data[j]:
+                if abs(data[i]) > abs(data[j]):
                     matrix[i][j] = intensity
                     matrix[j][i] = 1 / intensity
-                elif data[i] < data[j]:
+                elif abs(data[i]) < abs(data[j]):
                     matrix[i][j] = 1 / intensity
                     matrix[j][i] = intensity
                 else:
                     matrix[i][j] = 1
                     matrix[j][i] = 1  # Equal importance for identical values
             elif criterion_type == "min":  # Cost criterion
-                if data[i] < data[j]:  # Reverse logic for costs
+                if abs(data[i]) < abs(data[j]):  # Reverse logic for costs
                     matrix[i][j] = intensity
                     matrix[j][i] = 1 / intensity
-                elif data[i] > data[j]:
+                elif abs(data[i]) > abs(data[j]):
                     matrix[i][j] = 1 / intensity
                     matrix[j][i] = intensity
                 else:
@@ -72,6 +56,23 @@ def calculate_pairwise_matrix(data, criterion_type):
                     matrix[j][i] = 1  # Equal importance for identical values
 
     return matrix
+
+
+def map_to_intensity_smooth(ratio):
+    return min(9, max(1, round(9 / (1 + np.exp(-10 * (ratio - 0.5))))))
+
+
+def map_to_intensity(ratio):
+    if ratio <= 0.10:
+        return 1
+    elif ratio <= 0.25:
+        return 3
+    elif ratio <= 0.45:
+        return 5
+    elif ratio <= 0.75:
+        return 7
+    else:
+        return 9
 
 
 def calculate_all_pairwise_matrices(company_data, criteria):

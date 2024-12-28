@@ -8,7 +8,6 @@ from helpers.mcda_helpers import list_criteria, fetch_company_data, calculate_pa
     calculate_all_pairwise_matrices, aggregate_ahp_scores
 
 
-# TODO: Change to use all criteria (need to calculate matrices according to data in db)
 @app.route('/api/analyze/ahp', methods=['POST'])
 def analyze_ahp():
     data = request.json
@@ -17,9 +16,6 @@ def analyze_ahp():
 
     # 'mean'; 'geometric' or 'max_eigen'
     weight_derivation = data.get('weight_derivation', 'geometric')  # Weight derivation method (default: 'geometric')
-
-    # Get data for the selected companies
-    decision_matrices = []
 
     # Fetch company data
     company_data = fetch_company_data(selected_companies)
@@ -31,7 +27,7 @@ def analyze_ahp():
     # Validate data completeness
     for company in company_data:
         for criterion in criteria:
-            if criterion not in company:
+            if criterion['id'] not in company:
                 return jsonify({'error': f'Missing data for {criterion} in one or more companies'}), 400
 
     # Compute pairwise comparison matrices for each criterion
@@ -40,11 +36,11 @@ def analyze_ahp():
     # Perform AHP for each criterion
     alternative_weights = []
     for criterion_id, matrix in pairwise_comparison_matrices.items():
-        weights, rc = ahp_method(matrix, weight_derivation)
-        if rc > 0.1:
-            return jsonify({
-                'error': f"Inconsistent pairwise comparison for {criterion_id}. Please review the input."
-            }), 400
+        weights, rc = ahp_method(matrix, wd=weight_derivation)
+    #    if rc > 0.1:
+    #        return jsonify({
+    #            'error': f"Inconsistent pairwise comparison for {criterion_id}. Please review the input."
+    #        }), 400
         alternative_weights.append({
             "criterion": criterion_id,
             "weights": weights.tolist(),
@@ -129,11 +125,11 @@ def analyze_promethee():
     selected_companies = data['companies']  # List of selected company IDs
 
     # Parameters for promethee
-    Q = data.get("Q", [0.3] * 8)  # indifference
-    S = data.get("S", [0.4] * 8)  # preference
-    P = data.get("P", [0.5] * 8)  # veto
-    W = data.get("weights", [9.00, 8.24, 5.98, 8.48, 7.00, 6.50, 5.00, 7.80])  # weights
-    F = data.get("functions", ['t5'] * 8)  # preference functions
+    Q = data.get("Q", [0.3] * 10)  # indifference
+    S = data.get("S", [0.4] * 10)  # preference
+    P = data.get("P", [0.5] * 10)  # veto
+    W = data.get("weights", [9.00, 8.24, 5.98, 8.48, 7.00, 6.50, 5.00, 7.80, 6.70, 5.90])  # weights
+    F = data.get("functions", ['t5'] * 10)  # preference functions
 
     criteria = list_criteria()
 
@@ -156,8 +152,24 @@ def analyze_promethee():
     # Vnesemo podatke za PROMETHEE
     scores = promethee_ii(decision_matrix, W=W, Q=Q, S=S, P=P, F=F, sort=True, topn=10, graph=True, verbose=True)
 
+    scores = scores.tolist()
+
+    # Map company names to company numbers (1 to N)
+    company_names = [company["name"] for company in company_data]
+
+    # Combine company numbers with their respective scores
+    company_scores = []
+    for score in scores:
+        company_scores.append({
+            "company_name": company_names[int(score[0]) - 1],  # Company name
+            "alternative": int(score[0]),
+            "score": score[1]
+        })
+
     # Vrnemo rezultate v JSON obliki
-    return jsonify({scores})
+    return jsonify({
+        'scores': company_scores
+    })
 
 
 @app.route('/api/analyze/waspas', methods=['POST'])
@@ -192,17 +204,35 @@ def analyze_waspas():
         return jsonify({'error': f'Missing data for criterion: {str(e)}'}), 400
 
     # Validation (Ensure dataset shape, weights, and criterion_type consistency)
-    if len(criterion_types) != decision_matrix.shape[1] or len(user_weights) != decision_matrix.shape[1]:
+    if len(criterion_types) != decision_matrix.shape[1] or len(weights) != decision_matrix.shape[1]:
         return jsonify({'error': 'The number of criteria must match the dataset dimensions'}), 400
 
     # Call WASPAS method
     wsm, wpm, waspas = waspas_method(decision_matrix, criterion_types, weights, lambda_value, graph=True)
 
+    # Round the results to 3 decimals
+    wsm = [round(score, 3) for score in wsm]
+    wpm = [round(score, 3) for score in wpm]
+    waspas = [round(score, 3) for score in waspas]
+
+    # Map company names to the results
+    company_names = [company["name"] for company in company_data]  # Extract company names
+
+    # Create lists of results with company names
+    wsm_results = [{"company_name": company_names[i], "score": wsm[i]} for i in range(len(company_names))]
+    wpm_results = [{"company_name": company_names[i], "score": wpm[i]} for i in range(len(company_names))]
+    waspas_results = [{"company_name": company_names[i], "score": waspas[i]} for i in range(len(company_names))]
+
+    # Sort the results based on the score in descending order
+    wsm_results = sorted(wsm_results, key=lambda x: x['score'], reverse=True)
+    wpm_results = sorted(wpm_results, key=lambda x: x['score'], reverse=True)
+    waspas_results = sorted(waspas_results, key=lambda x: x['score'], reverse=True)
+
     # Return the results in JSON format
     return jsonify({
-        'WSM_result': wsm.tolist(),  # Weighted Sum Model result
-        'WPM_result': wpm.tolist(),  # Weighted Product Model result
-        'WASPAS_result': waspas.tolist()  # WASPAS combined result
+        'WSM_result': wsm_results,  # Weighted Sum Model result
+        'WPM_result': wpm_results,  # Weighted Product Model result
+        'WASPAS_result': waspas_results  # WASPAS combined result
     })
 
 

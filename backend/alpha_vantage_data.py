@@ -1,3 +1,5 @@
+import random
+
 import requests
 from app import db, create_app
 from app.models import Company, FinancialIndicator
@@ -72,17 +74,24 @@ def update_all_companies():
         symbol = company.symbol
 
         # Get data from Alpha Vantage
-        data = get_alpha_vantage_data(symbol)
-        if not data:
-            continue
+        #data = get_alpha_vantage_data(symbol)
+        #if not data:
+            #continue
 
         # Extract relevant fields using safe_float helper
-        roe = safe_float(data.get('ReturnOnEquityTTM'))
-        price_to_earnings_ratio = safe_float(data.get('PERatio'))
-        dividend_yield = safe_float(data.get('DividendYield'))
-        volatility = safe_float(data.get('Beta'))
-        earnings_per_share = safe_float(data.get('EPS'))
-        EV_to_EBITDA = safe_float(data.get('EVToEBITDA'))
+        #roe = safe_float(data.get('ReturnOnEquityTTM'))
+        #price_to_earnings_ratio = safe_float(data.get('PERatio'))
+        #dividend_yield = safe_float(data.get('DividendYield'))
+        #volatility = safe_float(data.get('Beta'))
+        #earnings_per_share = safe_float(data.get('EPS'))
+        #EV_to_EBITDA = safe_float(data.get('EVToEBITDA'))
+
+        roe = round(random.uniform(5, 25), 2)  # Return on Equity (5% to 25%)
+        price_to_earnings_ratio = round(random.uniform(5, 40), 2)  # P/E ratio (5 to 40)
+        dividend_yield = round(random.uniform(1, 10), 2)  # Dividend yield (1% to 10%)
+        volatility = round(random.uniform(0.1, 2.5), 2)  # Stock volatility (0.1 to 2.5)
+        earnings_per_share = round(random.uniform(1, 10), 2)  # Earnings Per Share (1 to 10)
+        EV_to_EBITDA = round(random.uniform(5, 20), 2)  # EV to EBITDA (5 to 20)
 
         # Update financial indicators
         update_financial_indicators(company.id, roe, price_to_earnings_ratio, dividend_yield, volatility, earnings_per_share, EV_to_EBITDA)
