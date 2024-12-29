@@ -3,7 +3,6 @@
   import Tabs from './components/Tabs.svelte';
   import CompanySelector from './components/CompanySelector.svelte';
   import CompanyDetails from './components/CompanyDetails.svelte';
-  import Results from "./components/Results.svelte";
 
   // Get the current page from localStorage or default to 'analysis'
   let currentPage = localStorage.getItem('currentPage') || 'analysis';
@@ -21,7 +20,6 @@
 {#if currentPage === 'analysis'}
   <CompanySelector />
   <Tabs />
-  <Results />
 {/if}
 
 {#if currentPage === 'overview'}
