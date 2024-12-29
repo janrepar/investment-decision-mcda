@@ -1,63 +1,31 @@
 <script>
-  import { onMount } from "svelte";
-  import CompanySelector from "./components/CompanySelector.svelte";
+  import Navigation from './components/Navigation.svelte';
+  import Tabs from './components/Tabs.svelte';
+  import CompanySelector from './components/CompanySelector.svelte';
+  import CompanyDetails from './components/CompanyDetails.svelte';
   import Results from "./components/Results.svelte";
 
-  let selectedCompanies = [];
-  let weights = [];
-  let results = null;
+  // Get the current page from localStorage or default to 'analysis'
+  let currentPage = localStorage.getItem('currentPage') || 'analysis';
+  let activeTab = 0;
 
-  const handleSubmit = async () => {
-    const response = await fetch('http://localhost:5000/api/analyze/waspas', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        companies: selectedCompanies,
-        weights: weights
-      })
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      results = data;
-    } else {
-      alert('Error: ' + response.statusText);
-    }
-  };
+  function navigate(page = "analysis") {
+    currentPage = page;
+    // Store the current page in localStorage
+    localStorage.setItem('currentPage', page);
+  }
 </script>
 
-<main>
-  <h1>WASPAS Analysis</h1>
+<Navigation {navigate} />
 
-  <!-- Company Selector -->
-  <CompanySelector bind:selectedCompanies />
+{#if currentPage === 'analysis'}
+  <CompanySelector />
+  <Tabs />
+  <Results />
+{/if}
 
-  <div>
-    <label for="weights">Enter Weights (comma-separated):</label>
-    <input id="weights" type="text" bind:value={weights} />
-  </div>
+{#if currentPage === 'overview'}
+  <p>Company Overview Page</p>
+  <CompanyDetails />
+{/if}
 
-  <button on:click={handleSubmit}>Submit</button>
-
-  <!-- Results -->
-  {#if results}
-    <Results {results} />
-  {/if}
-</main>
-
-<style>
-  main {
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-  }
-  input {
-    margin: 10px;
-  }
-  button {
-    margin-top: 10px;
-  }
-</style>

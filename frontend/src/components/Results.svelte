@@ -1,26 +1,23 @@
 <script>
-  export let results;
+  import { onMount } from "svelte";
+  let results = null;
+
+  const analyze = async () => {
+    const response = await fetch(`/api/analyze/${currentMethod}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        companies: selectedCompanies,
+        weights: Object.values(weights),
+      }),
+    });
+    results = await response.json();
+  };
 </script>
 
 <h3>Results</h3>
 
-<h4>WSM Result</h4>
-<ul>
-  {#each results.WSM_result as { company_name, score }}
-    <li>{company_name}: {score}</li>
-  {/each}
-</ul>
 
-<h4>WPM Result</h4>
-<ul>
-  {#each results.WPM_result as { company_name, score }}
-    <li>{company_name}: {score}</li>
-  {/each}
-</ul>
-
-<h4>WASPAS Result</h4>
-<ul>
-  {#each results.WASPAS_result as { company_name, score }}
-    <li>{company_name}: {score}</li>
-  {/each}
-</ul>
+{#if results}
+  <pre>{JSON.stringify(results, null, 2)}</pre>
+{/if}
