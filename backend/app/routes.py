@@ -35,14 +35,14 @@ def analyze_ahp():
 
     # Perform AHP for each criterion
     alternative_weights = []
-    for criterion_id, matrix in pairwise_comparison_matrices.items():
+    for criterion_name, matrix in pairwise_comparison_matrices.items():
         weights, rc = ahp_method(matrix, wd=weight_derivation)
-    #    if rc > 0.1:
+    #    if rc > 0.1: TODO: Check how to solve high rc for profit_change_percentage
     #        return jsonify({
     #            'error': f"Inconsistent pairwise comparison for {criterion_id}. Please review the input."
     #        }), 400
         alternative_weights.append({
-            "criterion": criterion_id,
+            "criterion": criterion_name,
             "weights": weights.tolist(),
             "consistency_ratio": rc
         })
@@ -78,6 +78,7 @@ def analyze_topsis():
 
     # Fetch criteria metadata and determine weights/types
     criteria = list_criteria()
+    criterion_names = [c["name"] for c in criteria]
     criterion_types = [c["type"] for c in criteria]  # 'max' or 'min'
     default_weights = [1 / len(criteria)] * len(criteria)  # Equal weights
 
@@ -108,13 +109,14 @@ def analyze_topsis():
 
     # Prepare results
     ranked_companies = [
-        {"name": company_data[i]["name"], "score": relative_closeness[i], "rank": rank + 1}
+        {"name": company_data[i]["name"], "symbol": company_data[i]["symbol"], "score": relative_closeness[i], "rank": rank + 1}
         for rank, i in enumerate(np.argsort(-relative_closeness))
     ]
 
     return jsonify({
         'weights': weights,
         'criterion_types': criterion_types,
+        'criterion_names': criterion_names,
         'ranked_companies': ranked_companies
     })
 
@@ -128,8 +130,8 @@ def analyze_promethee():
     Q = data.get("Q", [0.3] * 10)  # indifference
     S = data.get("S", [0.4] * 10)  # preference
     P = data.get("P", [0.5] * 10)  # veto
-    W = data.get("weights", [9.00, 8.24, 5.98, 8.48, 7.00, 6.50, 5.00, 7.80, 6.70, 5.90])  # weights
-    F = data.get("functions", ['t5'] * 10)  # preference functions
+    W = data.get("W", [9.00, 8.24, 5.98, 8.48, 7.00, 6.50, 5.00, 7.80, 6.70, 5.90])  # weights
+    F = data.get("F", ['t5'] * 10)  # preference functions
 
     criteria = list_criteria()
 
@@ -217,11 +219,12 @@ def analyze_waspas():
 
     # Map company names to the results
     company_names = [company["name"] for company in company_data]  # Extract company names
+    company_symbols = [company["symbol"] for company in company_data]
 
     # Create lists of results with company names
-    wsm_results = [{"company_name": company_names[i], "score": wsm[i]} for i in range(len(company_names))]
-    wpm_results = [{"company_name": company_names[i], "score": wpm[i]} for i in range(len(company_names))]
-    waspas_results = [{"company_name": company_names[i], "score": waspas[i]} for i in range(len(company_names))]
+    wsm_results = [{"company_name": company_names[i], "company_symbol": company_symbols[i], "score": wsm[i]} for i in range(len(company_names))]
+    wpm_results = [{"company_name": company_names[i], "company_symbol": company_symbols[i], "score": wpm[i]} for i in range(len(company_names))]
+    waspas_results = [{"company_name": company_names[i], "company_symbol": company_symbols[i], "score": waspas[i]} for i in range(len(company_names))]
 
     # Sort the results based on the score in descending order
     wsm_results = sorted(wsm_results, key=lambda x: x['score'], reverse=True)
@@ -251,38 +254,6 @@ def get_companies():
         for company in companies
     ]
     return jsonify(result)
-
-
-@app.route('/api/companies/<int:company_id>', methods=['GET'])
-def get_company(company_id):
-    company = Company.query.get_or_404(company_id)
-    financial_data = [
-        {
-            "id": indicator.id,
-            "revenue": indicator.revenue,
-            "revenue_change_percentage": indicator.revenue_change_percentage,
-            "profit": indicator.profit,
-            "profit_change_percentage": indicator.profit_change_percentage,
-            "assets": indicator.assets,
-            "employees": indicator.employees,
-            "roe": indicator.roe,
-            "price_to_earnings_ratio": indicator.price_to_earnings_ratio,
-            "stock_volatility": indicator.stock_volatility,
-            "dividend_yield": indicator.dividend_yield,
-            "earnings_per_share": indicator.earnings_per_share,
-            "EV_to_EBITDA": indicator.EV_to_EBITDA
-        }
-        for indicator in company.financial_indicators
-    ]
-    return jsonify({
-        "id": company.id,
-        "name": company.name,
-        "symbol": company.symbol,
-        "rank": company.rank,
-        "rank_change": company.rank_change,
-        "years_in_rank": company.years_in_rank,
-        "financial_indicators": financial_data
-    })
 
 
 @app.route('/api/criteria', methods=['GET'])

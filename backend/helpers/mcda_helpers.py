@@ -87,11 +87,12 @@ def calculate_all_pairwise_matrices(company_data, criteria):
 
     for criterion in criteria:
         criterion_id = criterion["id"]
+        criterion_name = criterion["name"]
         criterion_type = criterion["type"]
         values = [company[criterion_id] for company in company_data]
 
         # Compute pairwise matrix for this criterion
-        pairwise_comparisons[criterion_id] = calculate_pairwise_matrix(values, criterion_type)
+        pairwise_comparisons[criterion_name] = calculate_pairwise_matrix(values, criterion_type)
 
     return pairwise_comparisons
 
@@ -123,7 +124,7 @@ def aggregate_ahp_scores(company_data, alternative_weights, criteria_weights):
 
     # Rank companies by scores
     ranked_companies = sorted(
-        [{"name": company_data[i]["name"], "score": normalized_scores[i]} for i in range(num_companies)],
+        [{"name": company_data[i]["name"], "symbol": company_data[i]["symbol"], "score": normalized_scores[i]} for i in range(num_companies)],
         key=lambda x: x["score"],
         reverse=True
     )
@@ -147,6 +148,7 @@ def fetch_company_data(selected_company_ids):
         if financial_data:
             company_data.append({
                 "name": company.name,
+                "symbol": company.symbol,
                 "revenue": financial_data.revenue,
                 "profit": financial_data.profit,
                 "profit_change_percentage": financial_data.profit_change_percentage,

@@ -78,6 +78,7 @@ def update_all_companies():
         #if not data:
             #continue
 
+        # TODO: Add None values back in db and try calling alpha venture again for company overall data
         # Extract relevant fields using safe_float helper
         #roe = safe_float(data.get('ReturnOnEquityTTM'))
         #price_to_earnings_ratio = safe_float(data.get('PERatio'))
