@@ -5,7 +5,7 @@ from pyDecision.algorithm import ahp_method, topsis_method, promethee_ii, waspas
 
 from app.models import Company, FinancialIndicator
 from helpers.mcda_helpers import list_criteria, fetch_company_data, calculate_pairwise_matrix, \
-    calculate_all_pairwise_matrices, aggregate_ahp_scores
+    calculate_all_pairwise_matrices, aggregate_ahp_scores, list_methods
 
 
 @app.route('/api/analyze/ahp', methods=['POST'])
@@ -260,5 +260,47 @@ def get_companies():
 def get_criteria():
     # Retrieve the list of all available criteria for analysis.
     criteria = list_criteria()
-
     return jsonify(criteria)
+
+
+@app.route('/api/methods', methods=['GET'])
+def get_methods():
+    methods = list_methods()
+    return jsonify(methods)
+
+
+@app.route('/api/company/<int:company_id>', methods=['GET'])
+def get_company_overview(company_id):
+    # Fetch company data
+    company = Company.query.get_or_404(company_id)
+
+    # Fetch related financial indicators
+    financial_data = FinancialIndicator.query.filter_by(company_id=company.id).first()
+
+    # Structure the response
+    response = {
+        "company": {
+            "id": company.id,
+            "name": company.name,
+            "symbol": company.symbol,
+            "rank": company.rank,
+            "rank_change": company.rank_change,
+            "years_in_rank": company.years_in_rank
+        },
+        "financial_indicators": {
+            "revenue": financial_data.revenue,
+            "profit": financial_data.profit,
+            "assets": financial_data.assets,
+            "employees": financial_data.employees,
+            "roe": financial_data.roe,
+            "price_to_earnings_ratio": financial_data.price_to_earnings_ratio,
+            "stock_volatility": financial_data.stock_volatility,
+            "dividend_yield": financial_data.dividend_yield,
+            "earnings_per_share": financial_data.earnings_per_share,
+            "EV_to_EBITDA": financial_data.EV_to_EBITDA,
+            "profit_change_percentage": financial_data.profit_change_percentage,
+            "revenue_change_percentage": financial_data.revenue_change_percentage
+        }
+    }
+
+    return jsonify(response)
