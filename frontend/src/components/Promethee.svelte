@@ -28,7 +28,20 @@
     F = criteria.map(() => "t5");
   });
 
+  const normalizeWeights = () => {
+    const totalWeight = W.reduce((acc, weight) => acc + weight, 0);
+    if (totalWeight !== 0) {
+      W = W.map(weight => weight / totalWeight);
+    }
+    else if (totalWeight === 0) {
+      W = W.map(weight => 1);
+    }
+  };
+
   const analyzePROMETHEE = async () => {
+    // Normalize weights before sending them for analysis
+    normalizeWeights();
+
     let companyIds = [];
     selectedCompanies.subscribe(companies => {
       companyIds = companies.map(company => company.id);
@@ -62,7 +75,9 @@
   <div class="space-y-6">
     {#each criteria as criterion, index}
       <div class="bg-gray-800 p-4 rounded-lg shadow-md">
-        <h4 class="text-lg font-semibold text-indigo-400">{criterion.name}</h4>
+        <h4 class="text-lg font-semibold text-indigo-400 flex items-center">
+          {criterion.name}
+        </h4>
         <div class="grid grid-cols-5 gap-4 mt-2">
           <!-- Q Input -->
           <div class="flex flex-col">

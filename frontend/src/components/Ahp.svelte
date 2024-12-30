@@ -37,7 +37,7 @@
 
   <!-- Weight Derivation Selection -->
   <div class="mb-4">
-    <label for="weight-derivation" class="block text-white font-medium mb-2">
+    <label class="block text-sm font-medium text-gray-300 mb-2">
       Weight Derivation:
     </label>
     <select
