@@ -27,7 +27,7 @@
   <!-- Your main content goes here -->
   <div class="text-center">
     <h1 class="text-4xl font-bold text-white">Investment decision calculator</h1>
-    <p class="text-lg text-gray-400 mt-2">Here you can explore our services and offerings.</p>
+    <p class="text-lg text-gray-400 mt-2">Welcome, investment decision calculator will rank the companies according to one of the for MCDA methods that are available below. You can find the criteria list on separate page. Please choose at least three companies from list below and then choose an MCDA method.</p>
   </div>
 </div>
 

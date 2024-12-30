@@ -1,12 +1,17 @@
 <script>
   import { onMount } from "svelte";
   import { selectedCompanies } from '../stores/selectedCompaniesStore.js';
-  import WaspasResults from "../components/WaspasResults.svelte"; // Results component
+  import WaspasResults from "../components/WaspasResults.svelte";
+  import Chart from "../components/Chart.svelte";
+  import WaspasChart from "../components/WaspasChart.svelte"; // Results component
 
   let weights = [];
   let lambda = 0.5;
   let criteria = [];
   let results = null;
+
+  // Store for dynamic results
+  let dynamicResults = [];
 
   onMount(async () => {
     const res = await fetch('/api/criteria');
@@ -30,6 +35,14 @@
       }),
     });
     results = await response.json();
+    // Update the dynamicResults after getting the results
+    // Set results for all methods
+    dynamicResults = results.WASPAS_result.map((company) => ({
+      name: company.company_name,
+      waspasScore: company.score,
+      wpmScore: results.WPM_result.find(result => result.company_name === company.company_name)?.score || 0,
+      wsmScore: results.WSM_result.find(result => result.company_name === company.company_name)?.score || 0
+    }));
   };
 </script>
 
@@ -79,4 +92,10 @@
   <div class="mt-6">
     <WaspasResults {results} />
   </div>
+
+   <!-- Chart Component -->
+  <div class="mt-6">
+    <WaspasChart {dynamicResults} />
+  </div>
+
 </div>

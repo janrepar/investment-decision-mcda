@@ -35,7 +35,13 @@
       class="text-white hover:text-blue-400 transition-colors font-semibold"
       on:click={() => goToPage('overview')}
     >
-      Overview
+      Company Overview
+    </button>
+    <button
+      class="text-white hover:text-blue-400 transition-colors font-semibold"
+      on:click={() => goToPage('method-overview')}
+    >
+      Method Overview
     </button>
   </div>
 
@@ -63,7 +69,13 @@
         class="text-white hover:text-blue-400 transition-colors"
         on:click={() => goToPage('overview')}
       >
-        Overview
+        Company Overview
+      </button>
+      <button
+        class="text-white hover:text-blue-400 transition-colors"
+        on:click={() => goToPage('method-overview')}
+      >
+        Method Overview
       </button>
     </div>
   </div>

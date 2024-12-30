@@ -2,6 +2,7 @@
   import { selectedCompanies } from '../stores/selectedCompaniesStore.js';
   import { onMount } from "svelte";
   import PrometheeResults from "../components/PrometheeResults.svelte";
+  import Chart from "../components/Chart.svelte";
 
   let Q = [];
   let S = [];
@@ -10,6 +11,9 @@
   let F = [];
   let criteria = [];
   let results = null;
+
+  // Store for dynamic results
+  let dynamicResults = [];
 
   // Fetch criteria on mount
   onMount(async () => {
@@ -43,6 +47,11 @@
       }),
     });
     results = await response.json();
+    // Update the dynamicResults after getting the results
+    dynamicResults = results.scores.map((company) => ({
+      name: company.company_name,
+      score: company.score
+    }));
   };
 </script>
 
@@ -128,4 +137,9 @@
 
   <!-- Results Component -->
   <PrometheeResults {results} />
+
+  <!-- Chart Component -->
+  <div class="mt-6">
+    <Chart {dynamicResults} />
+  </div>
 </div>

@@ -1,11 +1,15 @@
 <script>
   import { onMount } from "svelte";
   import { selectedCompanies } from '../stores/selectedCompaniesStore.js';
-  import TopsisResults from "../components/TopsisResults.svelte"; // Results component
+  import TopsisResults from "../components/TopsisResults.svelte";
+  import Chart from "../components/Chart.svelte"; // Results component
 
   let weights = [];
   let criteria = [];
   let results = null;
+
+  // Store for dynamic results
+  let dynamicResults = [];
 
   onMount(async () => {
     const res = await fetch('/api/criteria');
@@ -28,6 +32,11 @@
       }),
     });
     results = await response.json();
+    // Update the dynamicResults after getting the results
+    dynamicResults = results.ranked_companies.map((company, index) => ({
+      name: company.name,
+      score: company.score
+    }));
   };
 </script>
 
@@ -58,8 +67,15 @@
     Analyze
   </button>
 
+
   <!-- Results Section -->
   <div class="mt-6">
     <TopsisResults {results} />
   </div>
+
+    <!-- Chart Component -->
+  <div class="mt-6">
+    <Chart {dynamicResults} />
+  </div>
+
 </div>

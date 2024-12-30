@@ -1,10 +1,13 @@
 <script>
   import { selectedCompanies } from '../stores/selectedCompaniesStore.js';
   import AhpResults from "../components/AhpResults.svelte";
+  import Chart from "../components/Chart.svelte";
 
   let weightDerivation = "geometric";
-  let criteriaWeights = [];
   let results = null;
+
+  // Store for dynamic results
+  let dynamicResults = [];
 
   const analyzeAHP = async () => {
     let companyIds = [];
@@ -21,6 +24,11 @@
       }),
     });
     results = await response.json();
+    // Update the dynamicResults after getting the results
+    dynamicResults = results.aggregated_scores.map((company) => ({
+      name: company.name,
+      score: company.score
+    }));
   };
 </script>
 
@@ -37,9 +45,15 @@
       bind:value={weightDerivation}
       class="w-full px-3 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none"
     >
-      <option value="geometric">Geometric</option>
-      <option value="mean">Mean</option>
-      <option value="max_eigen">Max Eigen</option>
+      <option value="geometric" title="Uses geometric mean of pairwise comparison values.">
+        Geometric
+      </option>
+      <option value="mean" title="Averages the pairwise comparison values.">
+        Mean
+      </option>
+      <option value="max_eigen" title="Derives weights from the largest eigenvalue of the pairwise comparison matrix.">
+        Max Eigen
+      </option>
     </select>
   </div>
 
@@ -53,4 +67,9 @@
 
   <!-- Results Component -->
   <AhpResults {results} />
+
+  <!-- Chart Component -->
+  <div class="mt-6">
+    <Chart {dynamicResults} />
+  </div>
 </div>
