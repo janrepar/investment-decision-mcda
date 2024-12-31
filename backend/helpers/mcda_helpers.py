@@ -1,5 +1,4 @@
 import numpy as np
-from pyDecision.algorithm import ahp_method
 
 from app.models import Company, FinancialIndicator
 
@@ -267,19 +266,19 @@ def list_methods():
             )
         },
         {
-            "id": "wpm",
-            "name": "WPM (Weighted Product Model)",
-            "description": (
-                "WPM evaluates options by multiplying the criteria values raised to their respective weights. "
-                "It is suitable when criteria are multiplicative."
-            )
-        },
-        {
             "id": "wsm",
             "name": "WSM (Weighted Sum Model)",
             "description": (
                 "WSM evaluates options by calculating the weighted sum of the criteria for each. "
                 "It assumes all criteria are additive and independent."
+            )
+        },
+        {
+            "id": "wpm",
+            "name": "WPM (Weighted Product Model)",
+            "description": (
+                "WPM evaluates options by multiplying the criteria values raised to their respective weights. "
+                "It is suitable when criteria are multiplicative."
             )
         }
     ]
