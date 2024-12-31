@@ -71,6 +71,7 @@ def update_financial_indicators(company_id, roe, price_to_earnings_ratio, divide
 def update_all_companies():
     companies = Company.query.all()  # Get all companies
 
+    # Update data not available in FMP
     symbols = [
         '600131.SS',
         '2222.SR',

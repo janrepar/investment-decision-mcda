@@ -13,16 +13,10 @@ load_dotenv()
 API_KEY = os.getenv('FMP_API_KEY')
 
 
-# Function to escape the dot in symbols for URL compatibility
-def escape_symbol_for_url(symbol):
-    return quote(symbol, safe='')  # Escape all characters, including dots
-
-
 # Function to get data from FMP API
 def get_fmp_data(symbol):
     try:
-        formatted_symbol = escape_symbol_for_url(symbol)  # Format symbol for URL
-        url = f'https://financialmodelingprep.com/api/v3/key-metrics-ttm/{formatted_symbol}?apikey={API_KEY}'
+        url = f'https://financialmodelingprep.com/api/v3/key-metrics-ttm/{symbol}?apikey={API_KEY}'
         response = requests.get(url)
         response.raise_for_status()  # Raise HTTPError for bad HTTP responses
         data = response.json()
@@ -41,8 +35,7 @@ def get_fmp_data(symbol):
 # Function to get Beta from FMP API
 def get_fmp_beta(symbol):
     try:
-        formatted_symbol = escape_symbol_for_url(symbol)  # Format symbol for URL
-        url = f'https://financialmodelingprep.com/api/v3/profile/{formatted_symbol}?apikey={API_KEY}'
+        url = f'https://financialmodelingprep.com/api/v3/profile/{symbol}?apikey={API_KEY}'
         response = requests.get(url)
         response.raise_for_status()  # Raise HTTPError for bad HTTP responses
         data = response.json()
