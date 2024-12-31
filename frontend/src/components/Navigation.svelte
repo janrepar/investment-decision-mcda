@@ -19,9 +19,9 @@
 </script>
 
 <!-- Fixed Navbar -->
-<nav class="flex items-center justify-between p-4 border-b border-gray-300 bg-gray-800 fixed top-0 left-0 right-0 z-50">
-  <!-- Logo -->
-  <img src="/path-to-logo.png" alt="Logo" class="h-10 mr-8" />
+<nav class="flex items-center justify-center p-4 border-b border-gray-300 bg-gray-800 fixed top-0 left-0 right-0 z-50">
+  <!-- Logo (acquired from https://www.stockio.com/free-icon/currency-paper-gradient-outline) -->
+  <img src="src/assets/currency-paper@2x.png" alt="Investment Calculator Logo" class="h-10 mr-8" />
 
   <!-- Desktop Nav Buttons -->
   <div class="flex space-x-6 hidden md:flex">
@@ -54,7 +54,7 @@
   </button>
 
   <!-- Mobile Menu -->
-  <div class={`md:hidden fixed inset-0 bg-black bg-opacity-50 ${isMenuOpen ? 'block' : 'hidden'}`} on:click={closeMenu}>
+  <div class={`md:hidden fixed inset-0 bg-black bg-opacity-95 ${isMenuOpen ? 'block' : 'hidden'}`} on:click={closeMenu}>
     <div class="flex justify-end p-6">
       <button class="text-white" on:click={closeMenu}>×</button>
     </div>

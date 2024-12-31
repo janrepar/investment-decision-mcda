@@ -15,6 +15,17 @@
   // Store for dynamic results
   let dynamicResults = [];
 
+  // Mapping preference functions to descriptive names
+  const functionDescriptions = {
+    t1: "Usual",
+    t2: "U-Shape",
+    t3: "V-Shape",
+    t4: "Level",
+    t5: "V-Shape with Indifference",
+    t6: "Gaussian",
+    t7: "C-Form"
+  };
+
   // Fetch criteria on mount
   onMount(async () => {
     const res = await fetch('/api/criteria');
@@ -28,13 +39,16 @@
     F = criteria.map(() => "t5");
   });
 
+  const setAllFunctions = (functionType) => {
+    F = F.map(() => functionType);
+  };
+
   const normalizeWeights = () => {
     const totalWeight = W.reduce((acc, weight) => acc + weight, 0);
     if (totalWeight !== 0) {
       W = W.map(weight => weight / totalWeight);
-    }
-    else if (totalWeight === 0) {
-      W = W.map(weight => 1);
+    } else if (totalWeight === 0) {
+      W = W.map(() => 1);
     }
   };
 
@@ -71,6 +85,20 @@
 <div class="max-w-2xl mx-auto bg-gray-850 p-6 rounded-lg shadow-md border border-indigo-600">
   <h3 class="text-2xl font-semibold text-white mb-4">PROMETHEE Method</h3>
 
+  <!-- Set All Functions -->
+  <div class="m-4">
+    <label class="text-sm font-medium text-gray-400">Set All Preference Functions:</label>
+    <select
+      on:change={(e) => setAllFunctions(e.target.value)}
+      class="ml-2 px-2 py-1 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+    >
+      <option disabled selected>Select Function</option>
+      {#each Object.entries(functionDescriptions) as [value, label]}
+        <option value={value}>{label}</option>
+      {/each}
+    </select>
+  </div>
+
   <!-- Criteria Inputs -->
   <div class="space-y-6">
     {#each criteria as criterion, index}
@@ -81,7 +109,7 @@
         <div class="grid grid-cols-5 gap-4 mt-2">
           <!-- Q Input -->
           <div class="flex flex-col">
-            <label class="text-sm font-medium text-gray-400">Q:</label>
+            <label class="text-sm font-medium text-gray-400">Indifference (Q):</label>
             <input
               type="number"
               step="0.01"
@@ -92,7 +120,7 @@
 
           <!-- S Input -->
           <div class="flex flex-col">
-            <label class="text-sm font-medium text-gray-400">S:</label>
+            <label class="text-sm font-medium text-gray-400">Gaussian (S):</label>
             <input
               type="number"
               step="0.01"
@@ -103,7 +131,7 @@
 
           <!-- P Input -->
           <div class="flex flex-col">
-            <label class="text-sm font-medium text-gray-400">P:</label>
+            <label class="text-sm font-medium text-gray-400">Preference (P):</label>
             <input
               type="number"
               step="0.01"
@@ -125,16 +153,14 @@
 
           <!-- F Input -->
           <div class="flex flex-col">
-            <label class="text-sm font-medium text-gray-400">Function (F):</label>
+            <label class="text-sm font-medium text-gray-400">Function:</label>
             <select
               bind:value={F[index]}
               class="px-2 py-1 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
-              <option value="t1">Type 1</option>
-              <option value="t2">Type 2</option>
-              <option value="t3">Type 3</option>
-              <option value="t4">Type 4</option>
-              <option value="t5">Type 5</option>
+              {#each Object.entries(functionDescriptions) as [value, label]}
+                <option value={value}>{label}</option>
+              {/each}
             </select>
           </div>
         </div>
