@@ -13,9 +13,23 @@ def analyze_ahp():
     data = request.json
     selected_companies = data['companies']  # List of selected company IDs
     criteria = list_criteria()  # List of selected criteria
+    pairwise_matrix = data.get('pairwise_matrix', [])  # Pairwise comparison matrix from the user
 
     # 'mean'; 'geometric' or 'max_eigen'
     weight_derivation = data.get('weight_derivation', 'geometric')  # Weight derivation method (default: 'geometric')
+
+    # Check if pairwise matrix is provided
+    if not pairwise_matrix or len(pairwise_matrix) != len(criteria):
+        return jsonify({'error': 'Invalid pairwise matrix provided.'}), 400
+
+    # Perform AHP for criteria pairwise comparison matrix
+    try:
+        criteria_weights, rc = ahp_method(pairwise_matrix, wd=weight_derivation)
+
+        if rc > 0.1:  # Consistency check
+            return jsonify({'error': 'Inconsistent criteria comparison. Please review your pairwise comparisons for criteria.'}), 400
+    except Exception as e:
+        return jsonify({'error': f'Error calculating criteria weights: {str(e)}'}), 500
 
     # Fetch company data
     company_data = fetch_company_data(selected_companies)
@@ -37,7 +51,7 @@ def analyze_ahp():
     alternative_weights = []
     for criterion_name, matrix in pairwise_comparison_matrices.items():
         weights, rc = ahp_method(matrix, wd=weight_derivation)
-    #    if rc > 0.1: TODO: Check how to solve high rc for profit_change_percentage
+    #    if rc > 0.1:
     #        return jsonify({
     #            'error': f"Inconsistent pairwise comparison for {criterion_id}. Please review the input."
     #        }), 400
@@ -46,18 +60,6 @@ def analyze_ahp():
             "weights": weights.tolist(),
             "consistency_ratio": rc
         })
-
-    # Calculate criteria weights
-    try:
-        # Use example weights or calculate dynamically
-        criteria_values = [1] * len(criteria)  # Equal weights as a placeholder
-        criteria_pairwise_matrix = calculate_pairwise_matrix(criteria_values, "max")
-        criteria_weights, rc = ahp_method(criteria_pairwise_matrix, weight_derivation)
-
-        if rc > 0.1:
-            return jsonify({'error': 'Inconsistent criteria comparison. Please review the criteria weights.'}), 400
-    except Exception as e:
-        return jsonify({'error': f'Error calculating criteria weights: {str(e)}'}), 500
 
     # Calculate the final scores
     final_scores = aggregate_ahp_scores(company_data, alternative_weights, criteria_weights)

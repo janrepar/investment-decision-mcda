@@ -74,6 +74,25 @@ def map_to_intensity(ratio):
         return 9
 
 
+def intensity_to_text(intensity):
+    mapping = {
+        1: "equally preferred to",
+        3: "moderately preferred to",
+        5: "strongly preferred to",
+        7: "very strongly preferred to",
+        9: "extremely preferred to"
+    }
+    if 1 < intensity < 3:
+        return "between equally and moderately preferred to"
+    elif 3 < intensity < 5:
+        return "between moderately and strongly preferred to"
+    elif 5 < intensity < 7:
+        return "between strongly and very strongly preferred to"
+    elif 7 < intensity < 9:
+        return "between very strongly and extremely preferred to"
+    return mapping.get(round(intensity), "equally preferred to")
+
+
 def calculate_all_pairwise_matrices(company_data, criteria):
     """
     Calculate pairwise comparison matrices for all criteria.
@@ -114,16 +133,9 @@ def aggregate_ahp_scores(company_data, alternative_weights, criteria_weights):
         for i, weight in enumerate(criterion_weights["weights"]):
             aggregated_scores[i] += weight * criterion_weight
 
-    # Normalize scores (optional for scaling between 0 and 1)
-    total_score = sum(aggregated_scores)
-    if total_score > 0:  # Avoid division by zero
-        normalized_scores = [score / total_score for score in aggregated_scores]
-    else:
-        normalized_scores = aggregated_scores  # Use raw scores if total is 0
-
     # Rank companies by scores
     ranked_companies = sorted(
-        [{"name": company_data[i]["name"], "symbol": company_data[i]["symbol"], "score": normalized_scores[i]} for i in range(num_companies)],
+        [{"name": company_data[i]["name"], "symbol": company_data[i]["symbol"], "score": aggregated_scores[i]} for i in range(num_companies)],
         key=lambda x: x["score"],
         reverse=True
     )
