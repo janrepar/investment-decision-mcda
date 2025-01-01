@@ -1,12 +1,16 @@
 <script>
-  import { onMount } from "svelte";
   import { writable } from "svelte/store";
 
   export let results = null;
   const showDetails = writable(false);
+  const showTable = writable(false); // State for showing the popup table
 
   const toggleDetails = () => {
     showDetails.update((state) => !state);
+  };
+
+  const toggleTable = () => {
+    showTable.update((state) => !state);
   };
 </script>
 
@@ -29,6 +33,14 @@
       </ul>
     </div>
 
+    <!-- Show Table Button -->
+    <button
+      on:click={toggleTable}
+      class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+    >
+      Show Criteria Table
+    </button>
+
     <!-- Show More Button -->
     <button
       on:click={toggleDetails}
@@ -43,11 +55,11 @@
       <div class="mt-6 space-y-6">
         <!-- Weights for Each Criterion -->
         <div>
-          <h4 class="text-lg font-semibold text-indigo-400 mb-4">Weights by Criterion</h4>
+          <h4 class="text-lg font-semibold text-indigo-400 mb-4">Company Priority Vectors</h4>
           {#each results.alternative_weights as { criterion, weights, consistency_ratio }}
             <div class="mb-4 bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
               <h5 class="text-white font-medium mb-2">
-                {criterion} (Consistency Ratio: {consistency_ratio.toFixed(4)})
+                {criterion}
               </h5>
               <ul class="space-y-1">
                 {#each weights as weight, index}
@@ -63,7 +75,7 @@
 
         <!-- Criteria Weights -->
         <div>
-          <h4 class="text-lg font-semibold text-indigo-400 mb-4">Criteria Weights</h4>
+          <h4 class="text-lg font-semibold text-indigo-400 mb-4">Criteria Priority Vectors</h4>
           <ul class="space-y-1 bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
             {#each results.criteria_weights as weight, index}
               <li class="flex justify-between text-sm text-gray-300">
@@ -80,3 +92,46 @@
     <p class="text-gray-400 text-center">No results available. Please run the analysis to see the results.</p>
   {/if}
 </div>
+
+<!-- Popup Table -->
+{#if $showTable}
+  <div class="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-95 z-50">
+    <div class="bg-gray-850 p-6 rounded-lg shadow-md border border-indigo-600 max-w-7xl w-full max-h-[80vh] overflow-auto">
+      <h4 class="text-lg font-semibold text-indigo-400 mb-4">Company Priority Vectors</h4>
+      <table class="min-w-full bg-gray-800 rounded-lg shadow-md border border-gray-700">
+        <thead>
+          <tr>
+            <th class="text-center py-2 px-4 text-gray-300">Company</th>
+            {#each results.criteria_weights as criterion, index}
+              <th class="text-left py-2 px-4 text-gray-300">{results.alternative_weights[index]?.criterion || `Criterion ${index + 1}`}</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each results.aggregated_scores as { name, symbol, score }, index}
+            <tr class="border-b border-gray-700">
+              <td class="py-2 px-4 text-white">{name} ({symbol})</td>
+              {#each results.criteria_weights as weight, critIndex}
+                <td class="py-2 px-4 text-gray-300">{results.alternative_weights[critIndex]?.weights[index]?.toFixed(4) || 'N/A'}</td>
+              {/each}
+            </tr>
+          {/each}
+
+          <!-- Last row for the priority vectors -->
+          <tr class="border-t border-gray-700">
+            <td class="py-2 px-4 text-white font-semibold">Criteria Priority Vectors</td>
+            {#each results.criteria_weights as weight}
+              <td class="py-2 px-4 text-gray-300">{weight.toFixed(4)}</td>
+            {/each}
+          </tr>
+        </tbody>
+      </table>
+      <button
+        on:click={toggleTable}
+        class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+      >
+        Close Table
+      </button>
+    </div>
+  </div>
+{/if}

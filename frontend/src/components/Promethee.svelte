@@ -74,6 +74,15 @@
       }),
     });
     results = await response.json();
+
+    if (!response.ok) {
+      // If the backend returns a consistency error
+      if (results.error) {
+        alert(results.error); // Display the error message as an alert
+      }
+      return;
+    }
+
     // Update the dynamicResults after getting the results
     dynamicResults = results.scores.map((company) => ({
       name: company.company_name,
@@ -104,6 +113,7 @@
     {#each criteria as criterion, index}
       <div class="bg-gray-800 p-4 rounded-lg shadow-md">
         <h4 class="text-lg font-semibold text-indigo-400 flex items-center">
+
           {criterion.name}
         </h4>
         <div class="grid grid-cols-5 gap-4 mt-2">

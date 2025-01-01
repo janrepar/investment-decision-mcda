@@ -47,6 +47,15 @@
       }),
     });
     results = await response.json();
+
+    if (!response.ok) {
+      // If the backend returns a consistency error
+      if (results.error) {
+        alert(results.error); // Display the error message as an alert
+      }
+      return;
+    }
+
     // Update the dynamicResults after getting the results
     dynamicResults = results.ranked_companies.map((company, index) => ({
       name: company.name,

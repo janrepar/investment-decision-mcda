@@ -35,6 +35,15 @@
       }),
     });
     results = await response.json();
+
+    if (!response.ok) {
+      // If the backend returns a consistency error
+      if (results.error) {
+        alert(results.error); // Display the error message as an alert
+      }
+      return;
+    }
+
     // Update the dynamicResults after getting the results
     // Set results for all methods
     dynamicResults = results.WASPAS_result.map((company) => ({
