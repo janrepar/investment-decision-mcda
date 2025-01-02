@@ -111,7 +111,7 @@
 <!-- Popup Table -->
 {#if $showTable}
   <div class="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-95 z-50">
-    <div class="bg-gray-850 p-6 rounded-lg shadow-md border border-indigo-600 max-w-7xl w-full max-h-[80vh] overflow-auto">
+    <div class="bg-gray-850 p-6 rounded-lg shadow-md border border-indigo-600 w-full max-h-[95vh] max-w-[85vw] overflow-auto">
       <h4 class="text-lg font-semibold text-indigo-400 mb-4">Company Priority Vectors</h4>
       <table class="min-w-full bg-gray-800 rounded-lg shadow-md border border-gray-700">
         <thead>

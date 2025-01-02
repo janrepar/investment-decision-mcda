@@ -28,7 +28,7 @@
     const res = await fetch('/api/criteria');
     criteria = await res.json();
 
-    Q = criteria.map(() => 0.3);
+    Q = criteria.map(() => 0.2);
     S = criteria.map(() => 0.4);
     P = criteria.map(() => 0.5);
     W = criteria.map(() => 1);
