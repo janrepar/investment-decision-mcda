@@ -53,7 +53,7 @@
     <!-- Additional Details -->
     {#if $showDetails}
       <div class="mt-6 space-y-6">
-        <!-- Weights for Each Criterion -->
+        <!-- Company Priority Vectors -->
         <div>
           <h4 class="text-lg font-semibold text-indigo-400 mb-4">Company Priority Vectors</h4>
           {#each results.alternative_weights as { criterion, weights, consistency_ratio }}
@@ -73,7 +73,7 @@
           {/each}
         </div>
 
-        <!-- Criteria Weights -->
+        <!-- Criteria Priority Vectors -->
         <div>
           <h4 class="text-lg font-semibold text-indigo-400 mb-4">Criteria Priority Vectors</h4>
           <ul class="space-y-1 bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
@@ -84,6 +84,21 @@
               </li>
             {/each}
           </ul>
+        </div>
+
+        <!-- Comparisons Section -->
+        <div>
+          <h4 class="text-lg font-semibold text-indigo-400 mb-4">Pairwise Comparisons</h4>
+          {#each Object.entries(results.comparisons) as [criterion, comparisonList]}
+            <div class="mb-4 bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
+              <h5 class="text-white font-medium mb-2">{criterion}</h5>
+              <ul class="space-y-1">
+                {#each comparisonList as comparison}
+                  <li class="text-sm text-gray-300">{comparison}</li>
+                {/each}
+              </ul>
+            </div>
+          {/each}
         </div>
       </div>
     {/if}

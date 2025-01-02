@@ -86,7 +86,7 @@
   };
 </script>
 
-<div class="max-w-xl mx-auto bg-gray-850 p-6 rounded-lg shadow-md border border-indigo-600">
+<div class="max-w-2xl mx-auto bg-gray-850 p-6 rounded-lg shadow-md border border-indigo-600">
   <h3 class="text-2xl font-semibold text-white mb-4">AHP Method</h3>
 
   <!-- Weight Derivation Selection -->
