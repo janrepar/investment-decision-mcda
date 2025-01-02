@@ -12,27 +12,23 @@
   let criteria = [];
   let results = null;
 
-  // Store for dynamic results
   let dynamicResults = [];
 
-  // Mapping preference functions to descriptive names
   const functionDescriptions = {
-    t1: "Usual",
-    t2: "U-Shape",
-    t3: "V-Shape",
-    t4: "Level",
-    t5: "V-Shape with Indifference",
-    t6: "Gaussian",
-    t7: "C-Form"
+    t1: "Usual: Best for qualitative criteria with a few distinct levels.",
+    t2: "U-Shape: Includes an indifference threshold; use for criteria with small tolerances.",
+    t3: "V-Shape: Suitable for quantitative criteria with no indifference threshold.",
+    t4: "Level: For qualitative criteria with multiple levels and modulated preference.",
+    t5: "Linear: Best for quantitative criteria with an indifference threshold.",
+    t6: "Gaussian: Smooth preference progression for quantitative criteria; uses an S threshold.",
+    t7: "C-Form: For advanced preference modeling (rarely used)."
   };
 
-  // Fetch criteria on mount
   onMount(async () => {
     const res = await fetch('/api/criteria');
     criteria = await res.json();
 
-    // Initialize arrays based on criteria length
-    Q = criteria.map(() => 0.3); // Example default
+    Q = criteria.map(() => 0.3);
     S = criteria.map(() => 0.4);
     P = criteria.map(() => 0.5);
     W = criteria.map(() => 1);
@@ -47,13 +43,12 @@
     const totalWeight = W.reduce((acc, weight) => acc + weight, 0);
     if (totalWeight !== 0) {
       W = W.map(weight => weight / totalWeight);
-    } else if (totalWeight === 0) {
+    } else {
       W = W.map(() => 1);
     }
   };
 
   const analyzePROMETHEE = async () => {
-    // Normalize weights before sending them for analysis
     normalizeWeights();
 
     let companyIds = [];
@@ -73,17 +68,16 @@
         F,
       }),
     });
+
     results = await response.json();
 
     if (!response.ok) {
-      // If the backend returns a consistency error
       if (results.error) {
-        alert(results.error); // Display the error message as an alert
+        alert(results.error);
       }
       return;
     }
 
-    // Update the dynamicResults after getting the results
     dynamicResults = results.scores.map((company) => ({
       name: company.company_name,
       score: company.score
@@ -94,30 +88,25 @@
 <div class="max-w-2xl mx-auto bg-gray-850 p-6 rounded-lg shadow-md border border-indigo-600">
   <h3 class="text-2xl font-semibold text-white mb-4">PROMETHEE Method</h3>
 
-  <!-- Set All Functions -->
-  <div class="m-4">
-    <label class="text-sm font-medium text-gray-400">Set All Preference Functions:</label>
-    <select
-      on:change={(e) => setAllFunctions(e.target.value)}
-      class="ml-2 px-2 py-1 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-    >
-      <option disabled selected>Select Function</option>
-      {#each Object.entries(functionDescriptions) as [value, label]}
-        <option value={value}>{label}</option>
-      {/each}
-    </select>
-  </div>
+  <div class="m-4 relative">
+  <label class="text-sm font-medium text-gray-400">Set All Preference Functions:</label>
+  <select
+    on:change={(e) => setAllFunctions(e.target.value)}
+    class="ml-2 px-2 py-1 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none relative"
+  >
+    <option disabled selected>Select Function</option>
+    {#each Object.entries(functionDescriptions) as [value, description]}
+      <option value={value} title={description}>{description.split(":")[0]}</option>
+    {/each}
+  </select>
+</div>
 
-  <!-- Criteria Inputs -->
+
   <div class="space-y-6">
     {#each criteria as criterion, index}
       <div class="bg-gray-800 p-4 rounded-lg shadow-md">
-        <h4 class="text-lg font-semibold text-indigo-400 flex items-center">
-
-          {criterion.name}
-        </h4>
+        <h4 class="text-lg font-semibold text-indigo-400 flex items-center">{criterion.name}</h4>
         <div class="grid grid-cols-5 gap-4 mt-2">
-          <!-- Q Input -->
           <div class="flex flex-col">
             <label class="text-sm font-medium text-gray-400">Indifference (Q):</label>
             <input
@@ -128,7 +117,6 @@
             />
           </div>
 
-          <!-- S Input -->
           <div class="flex flex-col">
             <label class="text-sm font-medium text-gray-400">Gaussian (S):</label>
             <input
@@ -139,7 +127,6 @@
             />
           </div>
 
-          <!-- P Input -->
           <div class="flex flex-col">
             <label class="text-sm font-medium text-gray-400">Preference (P):</label>
             <input
@@ -150,7 +137,6 @@
             />
           </div>
 
-          <!-- W Input -->
           <div class="flex flex-col">
             <label class="text-sm font-medium text-gray-400">Weight (W):</label>
             <input
@@ -161,24 +147,28 @@
             />
           </div>
 
-          <!-- F Input -->
-          <div class="flex flex-col">
+          <div class="flex flex-col relative">
             <label class="text-sm font-medium text-gray-400">Function:</label>
             <select
               bind:value={F[index]}
               class="px-2 py-1 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
-              {#each Object.entries(functionDescriptions) as [value, label]}
-                <option value={value}>{label}</option>
+              {#each Object.entries(functionDescriptions) as [value, description]}
+                <option value={value} title={description}>{description.split(":")[0]}</option>
               {/each}
             </select>
+            <div
+              class="absolute top-full mt-1 px-3 py-2 bg-gray-700 text-gray-200 text-xs rounded shadow"
+              style="display: none;"
+            >
+              {functionDescriptions[F[index]]}
+            </div>
           </div>
         </div>
       </div>
     {/each}
   </div>
 
-  <!-- Analyze Button -->
   <button
     on:click={analyzePROMETHEE}
     class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
@@ -186,10 +176,8 @@
     Analyze
   </button>
 
-  <!-- Results Component -->
   <PrometheeResults {results} />
 
-  <!-- Chart Component -->
   <div class="mt-6">
     <Chart {dynamicResults} />
   </div>

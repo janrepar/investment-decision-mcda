@@ -20,11 +20,9 @@
   const normalizeWeights = () => {
     const totalWeight = weights.reduce((acc, weight) => acc + weight, 0);
     if (totalWeight !== 0) {
-      // Normalize the weights to make the sum equal to 1
       weights = weights.map(weight => weight / totalWeight);
     }
     else if (totalWeight === 1) {
-      // Normalize the weights to make the sum equal to 1
       weights = weights.map(weight => 1);
     }
   };

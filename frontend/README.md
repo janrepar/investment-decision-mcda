@@ -45,3 +45,43 @@ If you have state that's important to retain within a component, consider creati
 import { writable } from 'svelte/store'
 export default writable(0)
 ```
+
+## Folder Structure
+```
+frontend/
+├── public/
+├── src/
+│   ├── assets/
+│   │   ├── currency-paper.svg
+│   │   ├── currency-paper@2x.svg
+│   ├── components/
+│   │   ├── Ahp.svelte
+│   │   ├── AhpResults.svelte
+│   │   ├── Chart.svelte
+│   │   ├── CompanyDetails.svelte
+│   │   ├── CompanySelector.svelte
+│   │   ├── MethodsOverview.svelte
+│   │   ├── Navigation.svelte
+│   │   ├── Promethee.svelte
+│   │   ├── PrometheeResults.svelte
+│   │   ├── Tabs.svelte
+│   │   ├── Topsis.svelte
+│   │   ├── TopsisResults.svelte
+│   │   ├── Waspas.svelte
+│   │   ├── WaspasChart.svelte
+│   │   ├── WaspasResults.svelte
+│   ├── stores/
+│   │   ├── selectedCompaniesStore.js
+│   ├── App.svelte
+│   ├── main.css
+│   ├── main.js
+│   ├── vite-env.d.ts
+├── index.html
+├── jsconfig.json
+├── package.json
+├── package-lock.json
+├── postcss.config.js
+├── svelte.config.js
+├── tailwind.config.js
+├── vite.config.js
+```
