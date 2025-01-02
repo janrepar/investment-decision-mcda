@@ -5,7 +5,7 @@ from pyDecision.algorithm import ahp_method, topsis_method, promethee_ii, waspas
 
 from app.models import Company, FinancialIndicator
 from helpers.mcda_helpers import list_criteria, fetch_company_data, calculate_pairwise_matrix, \
-    calculate_all_pairwise_matrices, aggregate_ahp_scores, list_methods
+    calculate_all_pairwise_matrices, aggregate_ahp_scores, list_methods, generate_comparison_text
 
 
 @app.route('/api/analyze/ahp', methods=['POST'])
@@ -44,11 +44,13 @@ def analyze_ahp():
             if criterion['id'] not in company:
                 return jsonify({'error': f'Missing data for {criterion} in one or more companies'}), 400
 
+    # TODO: Fix pairwise comparisons
     # Compute pairwise comparison matrices for each criterion
     pairwise_comparison_matrices = calculate_all_pairwise_matrices(company_data, criteria)
 
     # Perform AHP for each criterion
     alternative_weights = []
+    comparisons = {}
     for criterion_name, matrix in pairwise_comparison_matrices.items():
         weights, rc = ahp_method(matrix, wd=weight_derivation)
     #    if rc > 0.1:
@@ -61,6 +63,13 @@ def analyze_ahp():
             "consistency_ratio": rc
         })
 
+        # Generate textual comparisons for this criterion
+        criterion_comparisons = generate_comparison_text(matrix, [c["name"] for c in company_data])
+        comparisons[criterion_name] = criterion_comparisons
+
+        # Calculate the final scores
+        final_scores = aggregate_ahp_scores(company_data, alternative_weights, criteria_weights)
+
     # Calculate the final scores
     final_scores = aggregate_ahp_scores(company_data, alternative_weights, criteria_weights)
 
@@ -68,7 +77,8 @@ def analyze_ahp():
     return jsonify({
         'criteria_weights': criteria_weights.tolist(),
         'alternative_weights': alternative_weights,
-        'aggregated_scores': final_scores
+        'aggregated_scores': final_scores,
+        'comparisons': comparisons
     })
 
 

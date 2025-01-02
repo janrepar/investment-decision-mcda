@@ -30,7 +30,7 @@ def calculate_pairwise_matrix(data, criterion_type):
                     raise ValueError("Invalid criterion_type. Use 'max' or 'min'.")
 
                 # Determine intensity based on the ratio
-                intensity = map_to_intensity_smooth(ratio)
+                intensity = map_to_intensity(ratio)
 
             # Populate the pairwise comparison matrix
             if criterion_type == "max":  # Benefit criterion
@@ -74,7 +74,7 @@ def map_to_intensity(ratio):
         return 9
 
 
-def intensity_to_text(intensity):
+def preference_to_text(preferenece_num):
     mapping = {
         1: "equally preferred to",
         3: "moderately preferred to",
@@ -82,15 +82,27 @@ def intensity_to_text(intensity):
         7: "very strongly preferred to",
         9: "extremely preferred to"
     }
-    if 1 < intensity < 3:
-        return "between equally and moderately preferred to"
-    elif 3 < intensity < 5:
-        return "between moderately and strongly preferred to"
-    elif 5 < intensity < 7:
-        return "between strongly and very strongly preferred to"
-    elif 7 < intensity < 9:
-        return "between very strongly and extremely preferred to"
-    return mapping.get(round(intensity), "equally preferred to")
+    return mapping.get(preferenece_num, "equally preferred to")
+
+
+def generate_comparison_text(matrix, companies):
+    """
+    Generate textual pairwise comparisons from a pairwise matrix.
+
+    :param matrix: Pairwise comparison matrix.
+    :param companies: List of company names.
+    :return: List of textual comparisons.
+    """
+    n = len(matrix)
+    comparisons = []
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            preference_num = matrix[i][j]
+            text = preference_to_text(preference_num)
+            comparisons.append(f"{companies[i]} is {text} {companies[j]}")
+
+    return comparisons
 
 
 def calculate_all_pairwise_matrices(company_data, criteria):
