@@ -44,7 +44,6 @@ def analyze_ahp():
             if criterion['id'] not in company:
                 return jsonify({'error': f'Missing data for {criterion} in one or more companies'}), 400
 
-    # TODO: Fix pairwise comparisons
     # Compute pairwise comparison matrices for each criterion
     pairwise_comparison_matrices = calculate_all_pairwise_matrices(company_data, criteria)
 
@@ -53,10 +52,6 @@ def analyze_ahp():
     comparisons = {}
     for criterion_name, matrix in pairwise_comparison_matrices.items():
         weights, rc = ahp_method(matrix, wd=weight_derivation)
-    #    if rc > 0.1:
-    #        return jsonify({
-    #            'error': f"Inconsistent pairwise comparison for {criterion_id}. Please review the input."
-    #        }), 400
         alternative_weights.append({
             "criterion": criterion_name,
             "weights": weights.tolist(),
@@ -66,9 +61,6 @@ def analyze_ahp():
         # Generate textual comparisons for this criterion
         criterion_comparisons = generate_comparison_text(matrix, [c["name"] for c in company_data])
         comparisons[criterion_name] = criterion_comparisons
-
-        # Calculate the final scores
-        final_scores = aggregate_ahp_scores(company_data, alternative_weights, criteria_weights)
 
     # Calculate the final scores
     final_scores = aggregate_ahp_scores(company_data, alternative_weights, criteria_weights)
@@ -139,10 +131,10 @@ def analyze_promethee():
     selected_companies = data['companies']  # List of selected company IDs
 
     # Parameters for promethee
-    Q = data.get("Q", [0.3] * 10)  # indifference
+    Q = data.get("Q", [0.2] * 10)  # indifference
     S = data.get("S", [0.4] * 10)  # preference
     P = data.get("P", [0.5] * 10)  # veto
-    W = data.get("W", [9.00, 8.24, 5.98, 8.48, 7.00, 6.50, 5.00, 7.80, 6.70, 5.90])  # weights
+    W = data.get("W", [1.00] * 10)  # weights
     F = data.get("F", ['t5'] * 10)  # preference functions
 
     criteria = list_criteria()
