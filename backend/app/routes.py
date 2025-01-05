@@ -5,7 +5,7 @@ from pyDecision.algorithm import ahp_method, topsis_method, promethee_ii, waspas
 
 from app.models import Company, FinancialIndicator
 from helpers.mcda_helpers import list_criteria, fetch_company_data, calculate_pairwise_matrix, \
-    calculate_all_pairwise_matrices, aggregate_ahp_scores, list_methods, generate_comparison_text
+    calculate_all_pairwise_matrices, aggregate_ahp_scores, list_methods, generate_comparison_text, min_max_normalisation
 
 
 @app.route('/api/analyze/ahp', methods=['POST'])
@@ -138,6 +138,7 @@ def analyze_promethee():
     F = data.get("F", ['t5'] * 10)  # preference functions
 
     criteria = list_criteria()
+    criterion_types = [c["type"] for c in criteria]  # 'max' or 'min'
 
     # Fetch company data
     company_data = fetch_company_data(selected_companies)
@@ -155,8 +156,11 @@ def analyze_promethee():
     except KeyError as e:
         return jsonify({'error': f'Missing data for criterion: {str(e)}'}), 400
 
+    # Apply the custom Min-Max scaler
+    normalized_matrix = min_max_normalisation(decision_matrix, criterion_types)
+
     # Vnesemo podatke za PROMETHEE
-    scores = promethee_ii(decision_matrix, W=W, Q=Q, S=S, P=P, F=F, sort=True, topn=10, graph=True, verbose=True)
+    scores = promethee_ii(normalized_matrix, W=W, Q=Q, S=S, P=P, F=F, sort=True, topn=10, graph=True, verbose=True)
 
     scores = scores.tolist()
 

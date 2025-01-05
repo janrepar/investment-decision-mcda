@@ -17,7 +17,7 @@ def calculate_pairwise_matrix(data, criterion_type):
 
     for i in range(n):
         for j in range(i + 1, n):
-            # Calculate the absolute difference or ratio
+            # Calculate the absolute difference or ratio (ratio is relative so normalisation of values is not needed - ratio between 1000 and 1500 is the same as 1 and 1.5)
             if data[i] == 0 or data[j] == 0:
                 intensity = 1  # Avoid division by zero; treat as equal
             else:
@@ -155,6 +155,20 @@ def aggregate_ahp_scores(company_data, alternative_weights, criteria_weights):
     return ranked_companies
 
 
+def min_max_normalisation(decision_matrix, criterion_types):
+    normalized_matrix = np.copy(decision_matrix)
+    for i in range(decision_matrix.shape[1]):
+        if criterion_types[i] == 'max':
+            max_val = np.max(decision_matrix[:, i])
+            min_val = np.min(decision_matrix[:, i])
+            normalized_matrix[:, i] = (decision_matrix[:, i] - min_val) / (max_val - min_val)
+        elif criterion_types[i] == 'min':
+            min_val = np.min(decision_matrix[:, i])
+            max_val = np.max(decision_matrix[:, i])
+            normalized_matrix[:, i] = (max_val - decision_matrix[:, i]) / (max_val - min_val)
+    return normalized_matrix
+
+
 def fetch_company_data(selected_company_ids):
     """
     Fetch company data and financial indicators for selected companies.
@@ -184,6 +198,7 @@ def fetch_company_data(selected_company_ids):
                 "EV_to_EBITDA": financial_data.EV_to_EBITDA
             })
     return company_data
+
 
 
 def list_criteria():
