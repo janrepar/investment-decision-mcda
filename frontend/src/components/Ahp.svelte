@@ -24,7 +24,6 @@
     pairwiseMatrix = criteria.map((_, i) => criteria.map((_, j) => (i === j ? 1 : 1)));
   });
 
-  // Function to validate and update pairwise matrix
   // Function to find the closest valid value
   const getClosestValidValue = (inputValue) => {
     return validValues.reduce((prev, curr) => {
@@ -37,12 +36,12 @@
     // Check if the value is valid
     if (validValues.includes(value)) {
       pairwiseMatrix[i][j] = value;
-      pairwiseMatrix[j][i] = value ? 1 / value : null; // Update reciprocal
+      pairwiseMatrix[j][i] = value ? 1 / value : null;
     } else {
       // If the value is not valid, find the closest valid value
       const closestValidValue = getClosestValidValue(value);
       pairwiseMatrix[i][j] = closestValidValue;
-      pairwiseMatrix[j][i] = closestValidValue ? 1 / closestValidValue : null; // Update reciprocal
+      pairwiseMatrix[j][i] = closestValidValue ? 1 / closestValidValue : null;
     }
   };
 
